@@ -95,7 +95,7 @@ var mongo = {
     },
     getHeadBlock: () => {
         if (typeof db !== 'undefined' && typeof db.state !== 'undefined') {
-            let blockState = db.state.findOne({"id": 1})
+            let blockState = db.state.findOne({"_id": 1})
             return blockState.headBlock
         }
         return -1
@@ -144,6 +144,16 @@ function sleep (time) {
 
 function replayFromSelfBackup() {
     backupUrl = config.mongodbPath + "/backup"
+}
+
+function checkBlocksFlow() {
+    const blocks = mongo.getHeadBlock()
+    sleep(5000)
+    if (mongo.getHeadBlock() > blocks) {
+        return true
+    } else {
+        return false
+    }
 }
 
 async function getGenesisBlocks() {
@@ -366,14 +376,13 @@ function checkHeightAndRun() {
             }
         }
         if (rebuildState == 0 && replayState == 0 && ! rebuildUnfinished) {
-            checkRestartCmd = ""
-            restartMongoDB = "if [[ ! $(ps aux | grep -v grep | grep -v defunct | grep 'mongod --dbpath') ]]; then mongod --dbpath /data/db >> /avalon/log/mongo.log 2>&1; fi && sleep 20"
+            restartMongoDB = "if [[ ! $(ps aux | grep -v grep | grep -v defunct | grep 'mongod --dbpath') ]]; then mongod --dbpath /data/db >> /avalon/log/mongo.log 2>&1; fi"
             restartAvalon = "if [[ ! $(ps aux | grep -v grep | grep -v defunct | grep src/main) ]]; then `" + config.scriptPath + " >> " + config.logPath + " 2>1&" + "`; fi;"
 
-            checkRestartCmd = restartMongoDB + " && "
-            checkRestartCmd += "echo '"+mongo.getHeadBlock()+"' > tmp.out 2>&1 && a=$(cat tmp.out) && sleep 15 && echo '"+mongo.getHeadBlock()+"' > tmp2.out 2>&1 && b=$(cat tmp2.out) && sleep 2 && if [ \"$a\" == \"$b\" ] ; then "+restartAvalon+" fi;"
-            logr.debug("Check restart command = " + checkRestartCmd)
-            runCmd(checkRestartCmd)
+            runCmd(restartMongoDB)
+            if(! checkBlocksFlow()) {
+                runCmd(restartAvalon)
+            }
         }
     })
     if (rebuildState == 0 && replayState == 0)
