@@ -113,9 +113,7 @@ function getCurTime() {
     var s = String(td.getSeconds()).padStart(2, '0')
 
     var dt = y + "/" + m + "/" + d + " " + h + ":" + mn + ":" + s
-    logr.info("\n")
-    logr.info("Current Time = ", dt)
-    logr.info("--------------------------------------------------")
+    return dt
 }
 
 var exec = require('child_process').exec;
@@ -264,10 +262,13 @@ function checkHeightAndRun() {
     axios.get(url + '/count').then((bHeight) => {
         curbHeight = bHeight.data.count
 
-        getCurTime()
+        let dt = getCurTime()
+        logr.debug("\n")
+        logr.debug("Current Time = ", dt)
+        logr.debug("--------------------------------------------------")
 
-        logr.info('Previous block height = ', prevbHeight)
-        logr.info('Current block height  = ', curbHeight)
+        logr.debug('Previous block height = ', prevbHeight)
+        logr.debug('Current block height  = ', curbHeight)
 
         if(createNet) {
             if (prevbHeight == curbHeight) {
