@@ -382,6 +382,7 @@ function checkHeightAndRun() {
 
             runCmd(restartMongoDB)
             if(! checkBlocksFlow()) {
+                logr.warn("Restarting as we are at same block height as 5 seconds ago!")
                 runCmd(restartAvalon)
             }
         }
