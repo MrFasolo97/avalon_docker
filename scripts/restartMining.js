@@ -144,9 +144,9 @@ function replayFromSelfBackup() {
     backupUrl = config.mongodbPath + "/backup"
 }
 
-function checkBlocksFlow() {
+function checkBlocksFlow(time = 30000) {
     const blocks = mongo.getHeadBlock()
-    sleep(5000)
+    sleep(time)
     if (mongo.getHeadBlock() > blocks) {
         return true
     } else {
@@ -271,7 +271,7 @@ function checkHeightAndRun() {
         logr.debug('Current block height  = ', curbHeight)
 
         if(createNet) {
-            if (prevbHeight == curbHeight) {
+            if (! checkBlocksFlow(15000)) {
                 var mineStartCmd = "curl http://localhost:3001/mineBlock"
                 runCmd(mineStartCmd)
             }
@@ -382,13 +382,13 @@ function checkHeightAndRun() {
 
             runCmd(restartMongoDB)
             if(! checkBlocksFlow()) {
-                logr.warn("Restarting as we are at same block height as 5 seconds ago!")
+                logr.warn("Restarting as we are at same block height as 30 seconds ago!")
                 runCmd(restartAvalon)
             }
         }
     })
     if (rebuildState == 0 && replayState == 0)
-        sleep(7000).then(() => checkHeightAndRun())
+        sleep(30000).then(() => checkHeightAndRun())
 }
 
 

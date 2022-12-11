@@ -85,8 +85,8 @@ services:
 
 
     ports:
-      - $HTTP_PORT:$HTTP_PORT
-      - $P2P_PORT:$P2P_PORT
+      - ${HTTP_PORT}:${HTTP_PORT}
+      - ${P2P_PORT}:${P2P_PORT}
 
     #command: /avalon/scripts/start.sh
     #command: ["node", "--stack-size=65500", "src/main.js"]
