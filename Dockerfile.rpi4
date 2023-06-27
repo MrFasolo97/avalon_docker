@@ -93,6 +93,8 @@ VOLUME /data/db /data/configdb
 # https://github.com/docker-library/mongo/issues/524
 ENV HOME /data/db
 
+RUN wget https://repo.mongodb.org/apt/ubuntu/dists/focal/mongodb-org/5.0/multiverse/binary-arm64/mongodb-database-tools_100.7.3_arm64.deb && dpkg -i mongodb-database-tools_100.7.3_arm64.deb
+
 RUN wget http://ports.ubuntu.com/pool/main/o/openssl/libssl1.1_1.1.1-1ubuntu2.1~18.04.23_arm64.deb && dpkg -i libssl1.1_1.1.1-1ubuntu2.1~18.04.23_arm64.deb
 
 #### END OF MONGO CODE, START OF AVALON CODE
