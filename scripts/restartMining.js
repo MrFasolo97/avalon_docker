@@ -230,6 +230,9 @@ function replayAndRebuildStateFromBlocks(cb) {
 }
 
 function replayFromAvalonBackup(cb) {
+    replayAndRebuildStateFromBlocks(cb);
+    return;
+    // I guess DB snapshots aren't available anymore
     cmd = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep mongod` ]]; then `mongod --dbpath " + config.mongodbPath + " > mongo.log 2>&1 &`; fi"
     runCmd(cmd)
 
@@ -311,7 +314,7 @@ function checkHeightAndRun() {
                             logr.info("Dropping avalon mongo db (replayState from database snapshot)")
                             mongo.dropDatabase(function(){
                                 replayState = 1
-                                replayFromAvalonBackup(function(replayCount, replayState) {
+                                replayAndRebuildStateFromBlocks(function(replayCount, replayState) {
                                     replayCount++
                                     replayState = 0
                                 })
