@@ -68,6 +68,8 @@ services:
       - REBUILD_WRITE_INTERVAL=${REBUILD_WRITE_INTERVAL}
       - REBUILD_RESUME_BLK=${REBUILD_RESUME_BLK}
 
+      - DISABLE_RESTART_SCRIPT=${DISABLE_RESTART_SCRIPT}
+
         # default peers to connect with 
       - PEERS=${PEERS}
       - MAX_PEERS=${MAX_PEERS}

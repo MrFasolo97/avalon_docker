@@ -5,6 +5,7 @@ const MongoClient = require('mongodb').MongoClient
 const stream = require('stream')
 const { resolve } = require('dns')
 const promisify = require('util').promisify;
+const cron = require('node-cron');
 
 // https://stackoverflow.com/a/61269447  ===> CC BY-SA 4.0
 
@@ -35,6 +36,7 @@ let shouldGetGenesisBlocks = parseInt(process.env.GET_GENESIS_BLOCKS || 0)
 
 let replayState = parseInt(process.env.REPLAY_STATE || 0)
 let rebuildState = parseInt(process.env.REBUILD_STATE || 0)
+const disableRestartScript = parseInt(process.env.DISABLE_RESTART_SCRIPT || 0)
 let replayCheck = 0
 let rebuildUnfinished = 0
 
@@ -193,7 +195,7 @@ async function downloadBlocksFile(cb) {
                 }
             })
         }
-        if(Date.now() - mtime > 86400000) { // if the file is older than 1 day, then re-download it.
+        if(Date.now() - mtime > 86400000*10) { // if the file is older than 10 day(s), then re-download it.
             backupUrl = config.blockBackupUrl
             logr.info("Downloading blocks.bson file... it may take a while.")
             downloadFile(backupUrl, "/data/avalon/blocks/blocks.bson").then(() =>{
@@ -379,19 +381,17 @@ function checkHeightAndRun() {
                 logr.info("Replay/Rebuild didn't start yet or finished.")
             }
         }
-        if (rebuildState == 0 && replayState == 0 && ! rebuildUnfinished) {
+        if (rebuildState == 0 && replayState == 0 && ! rebuildUnfinished && disableRestartScript == 0) {
             restartMongoDB = "if [[ ! $(ps aux | grep -v grep | grep -v defunct | grep 'mongod --dbpath') ]]; then mongod --dbpath /data/db >> /avalon/log/mongo.log 2>&1; fi"
             restartAvalon = "if [[ ! $(ps aux | grep -v grep | grep -v defunct | grep src/main) ]]; then `" + config.scriptPath + " >> " + config.logPath + " 2>1&" + "`; fi;"
 
             runCmd(restartMongoDB)
-            if(! checkBlocksFlow()) {
+            if(!checkBlocksFlow()) {
                 logr.warn("Restarting as we are at same block height as 30 seconds ago!")
                 runCmd(restartAvalon)
             }
         }
     })
-    if (rebuildState == 0 && replayState == 0)
-        sleep(30000).then(() => checkHeightAndRun())
 }
 
 
@@ -404,7 +404,6 @@ if (shouldGetGenesisBlocks) {
         if(rebuildState == 0) {
             runCmd(restartAvalon)
         }
-        checkHeightAndRun()
     })
 } else {
     runCmd(restartMongoDB)
@@ -412,4 +411,9 @@ if (shouldGetGenesisBlocks) {
         runCmd(restartAvalon)
     }
     checkHeightAndRun()
+    if (disableRestartScript === 0 || disableRestartScript === false || disableRestartScript === "false") {
+        cron.schedule("30 * * * * *", () => {
+            checkHeightAndRun()
+        });
+    }
 }
