@@ -128,7 +128,7 @@ RUN mkdir /avalon/genesis
 RUN mkdir /avalon/blocks
 WORKDIR /avalon
 RUN npm install
-RUN npm install --save axios secp256k1
+RUN npm install --save axios secp256k1 node-cron
 RUN echo "" > log/avalon.log
 
 VOLUME $HOME/avalon/logs /avalon/log
