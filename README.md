@@ -19,20 +19,28 @@ Step 2.
   docker-compose build
 
 Step 3.
-  Create avalon, mongodb, logs directory under your home directory. The total chain db stays outside of the docker in your local in this mongodb directory.
+  Create avalon, mongodb, logs directory under your home directory. The total chain and related db stays outside of the docker container, in this avalon directory.
 `
   mkdir -p ~/avalon/mongodb &&
   mkdir ~/avalon/blocks &&
   mkdir ~/avalon/logs
 `
+
 Step 4.
   Update .env file to set ports and other environment variables.
 
 Step 5.
   Run the avalon container and be a observer leader.
-  docker-compose up
+  `docker compose up -d`
+  Check logs:
+  `docker compose logs -f`
+## How to run a miner node?
+  Set the leader account and leader keys on .env file as described above.
+  Then if the node is already running restart it with:
 
-  How to run a miner node?
+`docker compose down && docker compose up -d`
 
-Tip appreciated! Mantained by `@fasolo97`, made by `@brishtieveja0595`.
+Check the logs to see if your leader data is detected and correct.
+
+Tip appreciated! Maintained by `@fasolo97`, made by `@brishtieveja0595`.
 
