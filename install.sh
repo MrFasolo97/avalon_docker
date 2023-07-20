@@ -37,4 +37,4 @@ cd avalon_docker
 ln -s Dockerfile.$(dpkg --print-architecture) Dockerfile
 sudo docker compose build
 sudo docker compose create avalon
-sudo docker compose --compatibility up -d
+sudo REBUILD_STATE=1 docker compose --compatibility up -d
