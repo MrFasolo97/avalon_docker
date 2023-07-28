@@ -279,7 +279,7 @@ async function replayFromAvalonBackup(cb) {
 
 async function checkHeightAndRun() {
     let url = getUrl()
-    await axios.get(url + '/count').then((bHeight) => {
+    await axios.get(url + '/count').then(async (bHeight) => {
         curbHeight = bHeight.data.count
 
         let dt = getCurTime()
@@ -301,7 +301,10 @@ async function checkHeightAndRun() {
                 logr.info("Replaying from database")
             } else if (rebuildState) {
                 if (!fs.existsSync(genesisFilePath)) {
-                    getGenesisBlocks()
+                    await getGenesisBlocks()
+                }
+                if (! fs.existsSync('/data/avalon/blocks/blocks.bson')) {
+                    await downloadBlocksFile();
                 }
                 logr.info("Rebuilding state from blocks")
                     mongo.init(()=> {
@@ -417,16 +420,16 @@ let restartAvalon = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep src
 if (! fs.existsSync('/data/avalon/blocks/blocks.bson')) {
     await downloadBlocksFile();
     if (shouldGetGenesisBlocks) {
-        getGenesisBlocks().then(()=>{
+        await getGenesisBlocks().then(()=>{
             runCmd(restartMongoDB)
             if(rebuildState == 0) {
-                runCmd(restartAvalon)
+                checkHeightAndRun()
             }
         })
     } else {
         runCmd(restartMongoDB)
         if(rebuildState == 0) {
-            runCmd(restartAvalon)
+            checkHeightAndRun()
         }
         checkHeightAndRun()
         if (disableRestartScript === 0 || disableRestartScript === false || disableRestartScript === "false") {
