@@ -210,7 +210,7 @@ async function downloadBlocksFile(cb) {
             })
         }
         if(Date.now() - mtime > 86400000*10) { // if the file is older than 10 day(s), then re-download it.
-            backupUrl = config.blockBackupUrl
+            const backupUrl = config.blockBackupUrl
             logr.info("Downloading blocks.bson file... it may take a while.")
             downloadFile(backupUrl, "/data/avalon/blocks/blocks.bson").then(() =>{
                 if (typeof cb == 'function') {
@@ -409,28 +409,49 @@ function checkHeightAndRun() {
 }
 
 
-restartMongoDB = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep 'mongod --dbpath'` ]]; then `mongod --dbpath " + config.mongodbPath + " &`; sleep 15; fi"
-restartAvalon = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep src/main` ]]; then `echo \" Restarting avalon\" >> " + config.logPath + " `; `" + config.scriptPath + " >> " + config.logPath + " 2>1&" + "`; fi"
+const restartMongoDB = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep 'mongod --dbpath'` ]]; then `mongod --dbpath " + config.mongodbPath + " &`; sleep 15; fi"
+const restartAvalon = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep src/main` ]]; then `echo \" Restarting avalon\" >> " + config.logPath + " `; `" + config.scriptPath + " >> " + config.logPath + " 2>1&" + "`; fi"
 // running first time
 if (! fs.existsSync('/data/avalon/blocks/blocks.bson')) {
-    await downloadBlocksFile();
-}
-if (shouldGetGenesisBlocks) {
-    getGenesisBlocks().then(()=>{
+    downloadBlocksFile().then((res) => {
+        if (shouldGetGenesisBlocks) {
+            getGenesisBlocks().then(()=>{
+                runCmd(restartMongoDB)
+                if(rebuildState == 0) {
+                    runCmd(restartAvalon)
+                }
+            })
+        } else {
+            runCmd(restartMongoDB)
+            if(rebuildState == 0) {
+                runCmd(restartAvalon)
+            }
+            checkHeightAndRun()
+            if (disableRestartScript === 0 || disableRestartScript === false || disableRestartScript === "false") {
+                cron.schedule("30 * * * * *", () => {
+                    checkHeightAndRun()
+                });
+            }
+        }
+    });
+} else {
+    if (shouldGetGenesisBlocks) {
+        getGenesisBlocks().then(()=>{
+            runCmd(restartMongoDB)
+            if(rebuildState == 0) {
+                runCmd(restartAvalon)
+            }
+        })
+    } else {
         runCmd(restartMongoDB)
         if(rebuildState == 0) {
             runCmd(restartAvalon)
         }
-    })
-} else {
-    runCmd(restartMongoDB)
-    if(rebuildState == 0) {
-        runCmd(restartAvalon)
-    }
-    checkHeightAndRun()
-    if (disableRestartScript === 0 || disableRestartScript === false || disableRestartScript === "false") {
-        cron.schedule("30 * * * * *", () => {
-            checkHeightAndRun()
-        });
+        checkHeightAndRun()
+        if (disableRestartScript === 0 || disableRestartScript === false || disableRestartScript === "false") {
+            cron.schedule("30 * * * * *", () => {
+                checkHeightAndRun()
+            });
+        }
     }
 }
