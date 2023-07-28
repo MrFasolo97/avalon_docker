@@ -92,14 +92,15 @@ var replayCountMax = 5
 
 
 var mongo = {
+    db: null,
     init: (cb) => {
         MongoClient.connect(db_url, {
             useNewUrlParser: true,
             useUnifiedTopology: true
         }, function(err, client) {
             if (err) throw err
-            this.db = client.db(db_name)
-            logr.info('Connected to '+db_url+'/'+this.db.databaseName)
+            mongo.db = client.db(db_name)
+            logr.info('Connected to '+db_url+'/'+mongo.db.databaseName)
             cb()
         })
     },
