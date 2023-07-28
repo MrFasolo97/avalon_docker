@@ -199,33 +199,31 @@ async function getGenesisBlocks() {
     })
 }
 
-function downloadBlocksFile(cb) {
-    return new Promise((resolve, reject) => {
-        let mtime = null
-        if (fs.existsSync('/data/avalon/blocks/blocks.bson')) {
-            mtime = fs.statSync('/data/avalon/blocks/blocks.bson', (error, stats) => {
-                if(error) {
-                    console.log(error)
-                } else {
-                    return stats.mtime.getTime()
-                }
-            })
-        } else {
-            mtime = 0;
-        }
-        if(Date.now() - mtime > 86400000*10) { // if the file is older than 10 day(s), then re-download it.
-            const backupUrl = config.blockBackupUrl
-            logr.info("Downloading blocks.bson file... it may take a while.")
-            downloadFile(backupUrl, "/data/avalon/blocks/blocks.bson").then(() =>{
-                if (typeof cb == 'function') {
-                    cb()
-                }
-                resolve(true)
-            })
-        } else {
-            resolve(true)
-        }
-    })
+async function downloadBlocksFile(cb) {
+    let mtime = null
+    if (fs.existsSync('/data/avalon/blocks/blocks.bson')) {
+        mtime = fs.statSync('/data/avalon/blocks/blocks.bson', (error, stats) => {
+            if(error) {
+                console.log(error)
+            } else {
+                return stats.mtime.getTime()
+            }
+        })
+    } else {
+        mtime = 0;
+    }
+    if(Date.now() - mtime > 86400000*10) { // if the file is older than 10 day(s), then re-download it.
+        const backupUrl = config.blockBackupUrl
+        logr.info("Downloading blocks.bson file... it may take a while.")
+        downloadFile(backupUrl, "/data/avalon/blocks/blocks.bson").then(() =>{
+            if (typeof cb == 'function') {
+                cb()
+            }
+            return true;
+        })
+    } else {
+        return true;
+    }
 }
 
 async function replayAndRebuildStateFromBlocks(cb) {
@@ -236,7 +234,7 @@ async function replayAndRebuildStateFromBlocks(cb) {
     cmd = "pgrep \"src/main\" | xargs --no-run-if-empty kill  -9"
     runCmd(cmd)
     await downloadBlocksFile();
-    getGenesisBlocks().then(()=>{
+    await getGenesisBlocks().then(()=>{
         cmd = "cd /avalon"
         cmd += " && sleep 2 && "
         cmd += "REBUILD_STATE=1 " + config.scriptPath + " >> " + config.logPath + " 2>&1"
@@ -438,17 +436,18 @@ if (! fs.existsSync('/data/avalon/blocks/blocks.bson')) {
         }
     });
 }
+
 if (shouldGetGenesisBlocks) {
     await getGenesisBlocks().then(()=>{
         runCmd(restartMongoDB)
         if(rebuildState == 0) {
-            runCmd(restartAvalon)
+            checkHeightAndRun()
         }
     })
 } else {
     runCmd(restartMongoDB)
     if(rebuildState == 0) {
-        runCmd(restartAvalon)
+        checkHeightAndRun()
     }
     checkHeightAndRun()
     if (disableRestartScript === 0 || disableRestartScript === false || disableRestartScript === "false") {
