@@ -1,11 +1,12 @@
 import axios from 'axios'
 import * as fs from 'fs'
 import log4js from 'log4js'
-import { MongoClient } from 'mongodb'
 import stream from 'stream'
 import { promisify } from 'util'
 import { exec } from 'child_process'
 import cron from 'node-cron'
+import pkg from 'mongodb'
+const { MongoClient } = pkg
 
 
 log4js.configure({
@@ -414,7 +415,7 @@ let restartMongoDB = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep 'm
 let restartAvalon = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep src/main` ]]; then `echo \" Restarting avalon\" >> " + config.logPath + " `; `" + config.scriptPath + " >> " + config.logPath + " 2>1&" + "`; fi"
 // running first time
 if (! fs.existsSync('/data/avalon/blocks/blocks.bson')) {
-    downloadBlocksFile().then((res) => {
+    await downloadBlocksFile().then((res) => {
         if (shouldGetGenesisBlocks) {
             getGenesisBlocks().then(()=>{
                 runCmd(restartMongoDB)
