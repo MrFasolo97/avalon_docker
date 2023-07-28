@@ -199,7 +199,7 @@ async function getGenesisBlocks() {
     })
 }
 
-async function downloadBlocksFile(cb) {
+function downloadBlocksFile(cb) {
     return new Promise((resolve, reject) => {
         let mtime = null
         if (fs.existsSync('/data/avalon/blocks/blocks.bson')) {
@@ -210,6 +210,8 @@ async function downloadBlocksFile(cb) {
                     return stats.mtime.getTime()
                 }
             })
+        } else {
+            mtime = 0;
         }
         if(Date.now() - mtime > 86400000*10) { // if the file is older than 10 day(s), then re-download it.
             const backupUrl = config.blockBackupUrl
@@ -415,7 +417,7 @@ let restartMongoDB = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep 'm
 let restartAvalon = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep src/main` ]]; then `echo \" Restarting avalon\" >> " + config.logPath + " `; `" + config.scriptPath + " >> " + config.logPath + " 2>1&" + "`; fi"
 // running first time
 if (! fs.existsSync('/data/avalon/blocks/blocks.bson')) {
-    await downloadBlocksFile().then((res) => {
+    downloadBlocksFile().then((res) => {
         if (shouldGetGenesisBlocks) {
             getGenesisBlocks().then(()=>{
                 runCmd(restartMongoDB)
