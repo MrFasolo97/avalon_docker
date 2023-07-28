@@ -226,7 +226,7 @@ async function downloadBlocksFile(cb) {
 
 function replayAndRebuildStateFromBlocks(cb) {
     rebuildUnfinished = 1
-    cmd = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep mongod` ]]; then `mongod --dbpath " + config.mongodbPath + " > mongo.log 2>&1 &`; fi"
+    let cmd = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep mongod` ]]; then `mongod --dbpath " + config.mongodbPath + " > mongo.log 2>&1 &`; fi"
     runCmd(cmd)
 
     cmd = "pgrep \"src/main\" | xargs --no-run-if-empty kill  -9"
@@ -277,7 +277,7 @@ function replayFromAvalonBackup(cb) {
 }
 
 function checkHeightAndRun() {
-    var url = getUrl()
+    let url = getUrl()
     axios.get(url + '/count').then((bHeight) => {
         curbHeight = bHeight.data.count
 
