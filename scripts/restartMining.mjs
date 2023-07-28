@@ -1,11 +1,26 @@
-const axios = require('axios')
-const fs = require('fs')
-const logr = require('./src/logger')
-const MongoClient = require('mongodb').MongoClient
-const stream = require('stream')
-const { resolve } = require('dns')
-const promisify = require('util').promisify;
-const cron = require('node-cron');
+import axios from 'axios'
+import * as fs from 'fs'
+import log4js from 'log4js'
+import MongoClient from 'mognodb'
+import stream from 'stream'
+import promisify from 'utils'
+import cron from 'node-cron'
+
+
+log4js.configure({
+    appenders: {
+      logs: { type: 'file', filename: '/avalon/log/restart_script.log' },
+      console: { type: 'console' },
+    },
+    categories: {
+      logs: { appenders: ['logs'], level: 'trace' },
+      console: { appenders: ['console'], level: 'trace' },
+      default: { appenders: ['console', 'logs'], level: 'info' },
+    },
+  });
+
+
+const logr = log4js.getLogger();
 
 // https://stackoverflow.com/a/61269447  ===> CC BY-SA 4.0
 
@@ -398,6 +413,9 @@ function checkHeightAndRun() {
 restartMongoDB = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep 'mongod --dbpath'` ]]; then `mongod --dbpath " + config.mongodbPath + " &`; sleep 15; fi"
 restartAvalon = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep src/main` ]]; then `echo \" Restarting avalon\" >> " + config.logPath + " `; `" + config.scriptPath + " >> " + config.logPath + " 2>1&" + "`; fi"
 // running first time
+if (! fs.existsSync('/data/avalon/blocks/blocks.bson')) {
+    await downloadBlocksFile();
+}
 if (shouldGetGenesisBlocks) {
     getGenesisBlocks().then(()=>{
         runCmd(restartMongoDB)
