@@ -1,5 +1,5 @@
 import axios from 'axios'
-import * as fs from 'fs'
+import * as fs from 'node:fs'
 import log4js from 'log4js'
 import stream from 'stream'
 import { promisify } from 'util'
@@ -228,29 +228,28 @@ function downloadBlocksFile(cb) {
     })
 }
 
-function replayAndRebuildStateFromBlocks(cb) {
+async function replayAndRebuildStateFromBlocks(cb) {
     rebuildUnfinished = 1
     let cmd = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep mongod` ]]; then `mongod --dbpath " + config.mongodbPath + " > mongo.log 2>&1 &`; fi"
     runCmd(cmd)
 
     cmd = "pgrep \"src/main\" | xargs --no-run-if-empty kill  -9"
     runCmd(cmd)
-    downloadBlocksFile().then(()=>{
-        getGenesisBlocks().then(()=>{
-            cmd = "cd /avalon"
-            cmd += " && sleep 2 && "
-            cmd += "REBUILD_STATE=1 " + config.scriptPath + " >> " + config.logPath + " 2>&1"
-            logr.info("Rebuilding state from blocks commands = ", cmd)
-            runCmd(cmd)
-            if (typeof cb == 'function') {
-                cb()
-            }
-        })
+    await downloadBlocksFile();
+    getGenesisBlocks().then(()=>{
+        cmd = "cd /avalon"
+        cmd += " && sleep 2 && "
+        cmd += "REBUILD_STATE=1 " + config.scriptPath + " >> " + config.logPath + " 2>&1"
+        logr.info("Rebuilding state from blocks commands = ", cmd)
+        runCmd(cmd)
+        if (typeof cb == 'function') {
+            cb()
+        }
     })
 }
 
-function replayFromAvalonBackup(cb) {
-    replayAndRebuildStateFromBlocks(cb);
+async function replayFromAvalonBackup(cb) {
+    await replayAndRebuildStateFromBlocks(cb);
     return;
     // I guess DB snapshots aren't available anymore
     cmd = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep mongod` ]]; then `mongod --dbpath " + config.mongodbPath + " > mongo.log 2>&1 &`; fi"
@@ -309,8 +308,8 @@ function checkHeightAndRun() {
                 logr.info("Rebuilding state from blocks")
                     mongo.init(()=> {
                         logr.info("Dropping avalon mongo db (replayState from database snapshot)")
-                        mongo.dropDatabase(()=>{
-                            replayAndRebuildStateFromBlocks()
+                        mongo.dropDatabase(async ()=>{
+                            await replayAndRebuildStateFromBlocks()
                         })
                     })
             } else {
@@ -332,9 +331,9 @@ function checkHeightAndRun() {
                         tryRestartForSameHeight = 0
                         mongo.init(function() {
                             logr.info("Dropping avalon mongo db (replayState from database snapshot)")
-                            mongo.dropDatabase(function(){
+                            mongo.dropDatabase(async function(){
                                 replayState = 1
-                                replayAndRebuildStateFromBlocks(function(replayCount, replayState) {
+                                await replayAndRebuildStateFromBlocks(function(replayCount, replayState) {
                                     replayCount++
                                     replayState = 0
                                 })
@@ -361,7 +360,7 @@ function checkHeightAndRun() {
             replayCheck = 0
         }
         prevbHeight = curbHeight
-    }).catch(() => {
+    }).catch(async () => {
         if(createNet) {
             mongo.init(function() {
                 logr.info("Creating net")
@@ -394,7 +393,7 @@ function checkHeightAndRun() {
             } else if(rebuildState == 1) {
                 rebuildState = 0
                 logr.info("Rebuilding from blocks")
-                replayAndRebuildStateFromBlocks()
+                await replayAndRebuildStateFromBlocks()
             } else if(process.env.REBUILD_STATE || process.env.REPLAY_STATE) {
                 logr.info("Replay/Rebuild didn't start yet or finished.")
             }
@@ -417,7 +416,7 @@ let restartMongoDB = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep 'm
 let restartAvalon = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep src/main` ]]; then `echo \" Restarting avalon\" >> " + config.logPath + " `; `" + config.scriptPath + " >> " + config.logPath + " 2>1&" + "`; fi"
 // running first time
 if (! fs.existsSync('/data/avalon/blocks/blocks.bson')) {
-    downloadBlocksFile().then((res) => {
+    await downloadBlocksFile().then((res) => {
         if (shouldGetGenesisBlocks) {
             getGenesisBlocks().then(()=>{
                 runCmd(restartMongoDB)
@@ -438,24 +437,23 @@ if (! fs.existsSync('/data/avalon/blocks/blocks.bson')) {
             }
         }
     });
-} else {
-    if (shouldGetGenesisBlocks) {
-        getGenesisBlocks().then(()=>{
-            runCmd(restartMongoDB)
-            if(rebuildState == 0) {
-                runCmd(restartAvalon)
-            }
-        })
-    } else {
+}
+if (shouldGetGenesisBlocks) {
+    await getGenesisBlocks().then(()=>{
         runCmd(restartMongoDB)
         if(rebuildState == 0) {
             runCmd(restartAvalon)
         }
-        checkHeightAndRun()
-        if (disableRestartScript === 0 || disableRestartScript === false || disableRestartScript === "false") {
-            cron.schedule("30 * * * * *", () => {
-                checkHeightAndRun()
-            });
-        }
+    })
+} else {
+    runCmd(restartMongoDB)
+    if(rebuildState == 0) {
+        runCmd(restartAvalon)
+    }
+    checkHeightAndRun()
+    if (disableRestartScript === 0 || disableRestartScript === false || disableRestartScript === "false") {
+        cron.schedule("30 * * * * *", () => {
+            checkHeightAndRun()
+        });
     }
 }
