@@ -5,7 +5,7 @@ echo "Starting the mongodb database"
 mongod --dbpath /var/lib/mongodb > mongodb.log &
 sleep 2
 echo "Running dtube node"
-node restartMining.js &
+node restartMining.mjs &
 echo
 echo "Cleaning log folder..."
 rm /avalon/log/*
