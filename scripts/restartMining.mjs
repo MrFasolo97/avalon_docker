@@ -188,7 +188,7 @@ async function getGenesisBlocks() {
         } else {
             logr.info("Getting genesis.zip")
             shouldGetGenesisBlocks = 0
-            cmd = "cd /avalon"
+            let cmd = "cd /avalon"
             cmd += " && "
             cmd += "if [[ ! -d \"/avalon/genesis\" ]]; then `mkdir -p /avalon/genesis`; fi;"
             runCmd(cmd)
