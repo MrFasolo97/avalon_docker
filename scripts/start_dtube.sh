@@ -9,6 +9,7 @@ rm /avalon/log/*
 touch /avalon/log/avalon.log
 echo "Running dtube node"
 echo
+node restartMining.mjs &
 secs=5
 msg=" ..."
 while [ $secs -gt 0 ]
@@ -16,4 +17,4 @@ do
     printf "\r\033[KStarting in %.d seconds $msg" $((secs--))
     sleep 1
 done
-node restartMining.mjs
+tail -f log/avalon.log
