@@ -1,4 +1,4 @@
-FROM mongo:6.0.2
+FROM ubuntu:jammy
 
 EXPOSE 6029
 EXPOSE 3029
@@ -20,7 +20,14 @@ RUN apt-get update && apt-get install -y -q --no-install-recommends \
         libssl-dev \
         wget \
 	unzip \
+	libcurl4 \
+	libssl3 \
+	tzdata \
     && rm -rf /var/lib/apt/lists/*
+
+RUN wget http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.19_amd64.deb && dpkg -i libssl1.1_1.1.1f-1ubuntu2.19_amd64.deb && rm libssl1.1_1.1.1f-1ubuntu2.19_amd64.deb
+RUN wget https://repo.mongodb.org/apt/ubuntu/dists/focal/mongodb-org/6.0/multiverse/binary-amd64/mongodb-org-server_6.0.8_amd64.deb && dpkg -i mongodb-org-server_6.0.8_amd64.deb && rm mongodb-org-server_6.0.8_amd64.deb
+RUN wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-x86_64-100.7.3.deb && dpkg -i mongodb-database-tools-ubuntu2204-x86_64-100.7.3.deb && rm mongodb-database-tools-ubuntu2204-x86_64-100.7.3.deb
 
 RUN apt-get -y update && apt-get install -y openssl vim tmux locales-all curl
 
