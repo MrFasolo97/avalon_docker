@@ -1,9 +1,10 @@
 import axios from 'axios'
 import * as fs from 'fs'
 import log4js from 'log4js'
-import MongoClient from 'mognodb'
+import MongoClient from 'mongodb'
 import stream from 'stream'
-import promisify from 'utils'
+import { promisify } from 'util'
+import { exec } from 'child_process'
 import cron from 'node-cron'
 
 
@@ -132,8 +133,6 @@ function getCurTime() {
     var dt = y + "/" + m + "/" + d + " " + h + ":" + mn + ":" + s
     return dt
 }
-
-var exec = require('child_process').exec;
 
 function runCmd(cmdStr) {
     exec(cmdStr,

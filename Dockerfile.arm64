@@ -137,7 +137,7 @@ VOLUME $HOME/avalon/blocks /avalon/blocks
 
 ADD ./scripts/start_dtube.sh ./scripts/start_dtube.sh
 ADD ./scripts/start_mainnet.sh ./scripts/start_mainnet.sh
-ADD ./scripts/restartMining.js .
+ADD ./scripts/restartMining.mjs .
 COPY .tmux.conf /root/.tmux.conf
 COPY .vimrc /root/.vimrc
 
