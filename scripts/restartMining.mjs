@@ -105,7 +105,7 @@ var mongo = {
         })
     },
     dropDatabase: (cb) => {
-        db.dropDatabase(function() {
+        mongo.db.dropDatabase(function() {
             logr.info("Dropped avalon mongo db.")
             if (typeof cb == 'function') {
                 cb()
@@ -113,8 +113,8 @@ var mongo = {
         })
     },
     getHeadBlock: () => {
-        if (typeof db !== 'undefined' && typeof db.state !== 'undefined') {
-            let blockState = db.state.findOne({"_id": 1})
+        if (typeof mongo.db !== 'undefined' && typeof mongo.db.state !== 'undefined') {
+            let blockState = mongo.db.state.findOne({"_id": 1})
             return blockState.headBlock
         }
         return -1
