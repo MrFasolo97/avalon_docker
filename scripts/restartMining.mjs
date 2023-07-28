@@ -162,7 +162,7 @@ function replayFromSelfBackup() {
     backupUrl = config.mongodbPath + "/backup"
 }
 
-function checkBlocksFlow(time = 30000) {
+async function checkBlocksFlow(time = 30000) {
     const blocks = mongo.getHeadBlock()
     sleep(time)
     if (mongo.getHeadBlock() > blocks) {
@@ -215,7 +215,7 @@ async function downloadBlocksFile(cb) {
     if(Date.now() - mtime > 86400000*10) { // if the file is older than 10 day(s), then re-download it.
         const backupUrl = config.blockBackupUrl
         logr.info("Downloading blocks.bson file... it may take a while.")
-        downloadFile(backupUrl, "/data/avalon/blocks/blocks.bson").then(() =>{
+        await downloadFile(backupUrl, "/data/avalon/blocks/blocks.bson").then(() =>{
             if (typeof cb == 'function') {
                 cb()
             }
@@ -277,9 +277,9 @@ async function replayFromAvalonBackup(cb) {
     cb()
 }
 
-function checkHeightAndRun() {
+async function checkHeightAndRun() {
     let url = getUrl()
-    axios.get(url + '/count').then((bHeight) => {
+    await axios.get(url + '/count').then((bHeight) => {
         curbHeight = bHeight.data.count
 
         let dt = getCurTime()
@@ -396,6 +396,7 @@ function checkHeightAndRun() {
                 logr.info("Replay/Rebuild didn't start yet or finished.")
             }
         }
+        await downloadBlocksFile();
         if (rebuildState == 0 && replayState == 0 && ! rebuildUnfinished && disableRestartScript == 0) {
             restartMongoDB = "if [[ ! $(ps aux | grep -v grep | grep -v defunct | grep 'mongod --dbpath') ]]; then mongod --dbpath /data/db >> /avalon/log/mongo.log 2>&1; fi"
             restartAvalon = "if [[ ! $(ps aux | grep -v grep | grep -v defunct | grep src/main) ]]; then `" + config.scriptPath + " >> " + config.logPath + " 2>1&" + "`; fi;"
@@ -414,27 +415,26 @@ let restartMongoDB = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep 'm
 let restartAvalon = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep src/main` ]]; then `echo \" Restarting avalon\" >> " + config.logPath + " `; `" + config.scriptPath + " >> " + config.logPath + " 2>1&" + "`; fi"
 // running first time
 if (! fs.existsSync('/data/avalon/blocks/blocks.bson')) {
-    await downloadBlocksFile().then((res) => {
-        if (shouldGetGenesisBlocks) {
-            getGenesisBlocks().then(()=>{
-                runCmd(restartMongoDB)
-                if(rebuildState == 0) {
-                    runCmd(restartAvalon)
-                }
-            })
-        } else {
+    await downloadBlocksFile();
+    if (shouldGetGenesisBlocks) {
+        getGenesisBlocks().then(()=>{
             runCmd(restartMongoDB)
             if(rebuildState == 0) {
                 runCmd(restartAvalon)
             }
-            checkHeightAndRun()
-            if (disableRestartScript === 0 || disableRestartScript === false || disableRestartScript === "false") {
-                cron.schedule("30 * * * * *", () => {
-                    checkHeightAndRun()
-                });
-            }
+        })
+    } else {
+        runCmd(restartMongoDB)
+        if(rebuildState == 0) {
+            runCmd(restartAvalon)
         }
-    });
+        checkHeightAndRun()
+        if (disableRestartScript === 0 || disableRestartScript === false || disableRestartScript === "false") {
+            cron.schedule("30 * * * * *", () => {
+                checkHeightAndRun()
+            });
+        }
+    }
 }
 
 if (shouldGetGenesisBlocks) {
@@ -446,10 +446,7 @@ if (shouldGetGenesisBlocks) {
     })
 } else {
     runCmd(restartMongoDB)
-    if(rebuildState == 0) {
-        checkHeightAndRun()
-    }
-    checkHeightAndRun()
+    await checkHeightAndRun()
     if (disableRestartScript === 0 || disableRestartScript === false || disableRestartScript === "false") {
         cron.schedule("30 * * * * *", () => {
             checkHeightAndRun()
