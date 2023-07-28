@@ -113,7 +113,7 @@ var mongo = {
         })
     },
     getHeadBlock: () => {
-        if (typeof mongo.db !== 'undefined' && typeof mongo.db.state !== 'undefined') {
+        if (mongo.db !== null && typeof mongo.db.state !== 'undefined') {
             let blockState = mongo.db.state.findOne({"_id": 1})
             return blockState.headBlock
         }
