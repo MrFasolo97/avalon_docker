@@ -1,7 +1,7 @@
 import axios from 'axios'
 import * as fs from 'fs'
 import log4js from 'log4js'
-import MongoClient from 'mongodb'
+import { MongoClient } from 'mongodb'
 import stream from 'stream'
 import { promisify } from 'util'
 import { exec } from 'child_process'
