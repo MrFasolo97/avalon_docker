@@ -16,5 +16,5 @@ fi
 
 
 if [[ $1 == "logs" ]]; then
-  docker compose logs -f
+  docker compose logs -f --tail 40
 fi
