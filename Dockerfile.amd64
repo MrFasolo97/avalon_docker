@@ -23,16 +23,18 @@ RUN apt-get update && apt-get install -y -q --no-install-recommends \
 	libcurl4 \
 	libssl3 \
 	tzdata \
-    && rm -rf /var/lib/apt/lists/*
+	curl
 
-RUN wget http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.20_amd64.deb && dpkg -i libssl1.*amd64.deb && rm libssl1.*amd64.deb
+RUN curl -O http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.20_amd64.deb && dpkg -i libssl1.*amd64.deb && rm libssl1.*amd64.deb
 RUN wget https://repo.mongodb.org/apt/ubuntu/dists/focal/mongodb-org/6.0/multiverse/binary-amd64/mongodb-org-server_6.0.8_amd64.deb && dpkg -i mongodb-org-server_6.0.8_amd64.deb && rm mongodb-org-server_6.0.8_amd64.deb
 RUN wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-x86_64-100.7.3.deb && dpkg -i mongodb-database-tools-ubuntu2204-x86_64-100.7.3.deb && rm mongodb-database-tools-ubuntu2204-x86_64-100.7.3.deb
 
-RUN apt-get -y update && apt-get install -y openssl vim tmux locales-all curl
+RUN apt-get -y update && apt-get install -y openssl vim tmux locales-all
 
 # Install nvm with node and npm
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && apt-get install -y nodejs
+
+RUN rm -rf /var/lib/apt/lists/*
 
 LABEL "project.home"="https://github.com/dtube/avalon"
 RUN cd / && git clone https://github.com/dtube/avalon
