@@ -420,39 +420,36 @@ let restartAvalon = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep src
 if (! fs.existsSync('/data/avalon/blocks/blocks.bson')) {
     await downloadBlocksFile();
     if (shouldGetGenesisBlocks) {
-        await getGenesisBlocks().then(()=>{
+        await getGenesisBlocks().then(async ()=>{
             runCmd(restartMongoDB)
             if(rebuildState == 0) {
-                checkHeightAndRun()
+                await checkHeightAndRun()
             }
         })
     } else {
         runCmd(restartMongoDB)
         if(rebuildState == 0) {
-            checkHeightAndRun()
+            await checkHeightAndRun()
         }
-        checkHeightAndRun()
-        if (disableRestartScript === 0 || disableRestartScript === false || disableRestartScript === "false") {
-            cron.schedule("30 * * * * *", () => {
-                checkHeightAndRun()
-            });
-        }
+        await checkHeightAndRun()
     }
 }
 
 if (shouldGetGenesisBlocks) {
-    await getGenesisBlocks().then(()=>{
+    await getGenesisBlocks().then(async ()=>{
         runCmd(restartMongoDB)
         if(rebuildState == 0) {
-            checkHeightAndRun()
+            await checkHeightAndRun()
         }
     })
 } else {
     runCmd(restartMongoDB)
     await checkHeightAndRun()
-    if (disableRestartScript === 0 || disableRestartScript === false || disableRestartScript === "false") {
-        cron.schedule("30 * * * * *", () => {
-            checkHeightAndRun()
-        });
-    }
+}
+if (disableRestartScript === 0 || disableRestartScript === false || disableRestartScript.toString().toLowerCase() === "false") {
+    cron.schedule("30 * * * * *", async () => {
+        await checkHeightAndRun()
+    });
+} else {
+    logr.warn("Restart script disabled!");
 }
