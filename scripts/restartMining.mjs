@@ -53,6 +53,8 @@ let shouldGetGenesisBlocks = parseInt(process.env.GET_GENESIS_BLOCKS || 0)
 
 let replayState = parseInt(process.env.REPLAY_STATE || 0)
 let rebuildState = parseInt(process.env.REBUILD_STATE || 0)
+let rebuildNoVerify = parseInt(process.env.REBUILD_NO_VERIFY || 0)
+let rebuildNoValidate = parseInt(process.env.REBUILD_NO_VALIDATE || 0)
 const disableRestartScript = parseInt(process.env.DISABLE_RESTART_SCRIPT || 0)
 let replayCheck = 0
 let rebuildUnfinished = 0
@@ -237,6 +239,10 @@ async function replayAndRebuildStateFromBlocks(cb) {
     await getGenesisBlocks().then(()=>{
         cmd = "cd /avalon"
         cmd += " && sleep 2 && "
+        if (rebuildNoValidate === 1)
+            cmd += "REBUILD_NO_VALIDATE=1 "
+        if (rebuildNoVerify === 1)
+            cmd += "REBUILD_NO_VERIFY=1 "
         cmd += "REBUILD_STATE=1 " + config.scriptPath + " >> " + config.logPath + " 2>&1"
         logr.info("Rebuilding state from blocks commands = ", cmd)
         runCmd(cmd)
