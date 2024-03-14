@@ -239,9 +239,9 @@ async function replayAndRebuildStateFromBlocks(cb) {
     await getGenesisBlocks().then(()=>{
         cmd = "cd /avalon"
         cmd += " && sleep 2 && "
-        if (rebuildNoValidate === 1)
+        if (parseInt(process.env.REBUILD_NO_VALIDATE) == 1)
             cmd += "REBUILD_NO_VALIDATE=1 "
-        if (rebuildNoVerify === 1)
+        if (parseInt(process.env.REBUILD_NO_VERIFY) == 1)
             cmd += "REBUILD_NO_VERIFY=1 "
         cmd += "REBUILD_STATE=1 " + config.scriptPath + " >> " + config.logPath + " 2>&1"
         logr.info("Rebuilding state from blocks commands = ", cmd)
@@ -255,7 +255,10 @@ async function replayAndRebuildStateFromBlocks(cb) {
 async function replayFromAvalonBackup(cb) {
     await replayAndRebuildStateFromBlocks(cb);
     return;
+    //
     // I guess DB snapshots aren't available anymore
+    // The following code isn't executed.
+    //
     cmd = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep mongod` ]]; then `mongod --dbpath " + config.mongodbPath + " > mongo.log 2>&1 &`; fi"
     runCmd(cmd)
 
