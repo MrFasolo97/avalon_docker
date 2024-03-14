@@ -64,6 +64,8 @@ services:
 
         # Rebuild chain state from dump, verifying every block and transactions
         # Do not forget to comment this out after rebuild
+      - REBUILD_NO_VALIDATE=${REBUILD_NO_VALIDATE}
+      - REBUILD_NO_VERIFY=${REBUILD_NO_VERIFY}
       - REBUILD_STATE=${REBUILD_STATE}
       - REBUILD_WRITE_INTERVAL=${REBUILD_WRITE_INTERVAL}
       - REBUILD_RESUME_BLK=${REBUILD_RESUME_BLK}
