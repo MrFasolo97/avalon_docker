@@ -30,10 +30,15 @@ sudo apt install docker docker.io docker-compose-plugin git -yy
 
 cd
 mkdir -p ~/avalon/mongodb; mkdir ~/avalon/blocks; mkdir ~/avalon/logs
-git clone https://github.com/MrFasolo97/avalon_docker
+if [[ $(basename "$PWD") = "avalon_docker" ]]; then
+  git pull
+else
+  git clone https://github.com/MrFasolo97/avalon_docker
+  cd avalon_docker
+  sudo usermod -aG docker $USER
+fi
+
 echo user $USER
-sudo usermod -aG docker $USER
-cd avalon_docker
 ln -s Dockerfile.$(dpkg --print-architecture) Dockerfile
 sudo docker compose build
 sudo docker compose create avalon
