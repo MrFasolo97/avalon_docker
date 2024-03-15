@@ -461,4 +461,5 @@ if (disableRestartScript === 0 || disableRestartScript === false || disableResta
     });
 } else {
     logr.warn("Restart script disabled!");
+    await checkHeightAndRun();
 }
