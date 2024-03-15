@@ -410,7 +410,7 @@ async function checkHeightAndRun() {
         }
         await downloadBlocksFile();
         if (rebuildState == 0 && replayState == 0 && ! rebuildUnfinished && disableRestartScript == 0) {
-            restartMongoDB = "if [[ ! $(ps aux | grep -v grep | grep -v defunct | grep 'mongod --dbpath') ]]; then mongod --dbpath /data/db >> /avalon/log/mongo.log 2>&1; fi"
+            restartMongoDB = "if [[ ! $(ps aux | grep -v grep | grep -v defunct | grep 'mongod --dbpath') ]]; then mongod --dbpath " + config.mongodbPath + " >> /avalon/log/mongo.log 2>&1; fi"
             restartAvalon = "if [[ ! $(ps aux | grep -v grep | grep -v defunct | grep src/main) ]]; then `" + config.scriptPath + " >> " + config.logPath + " 2>1&" + "`; fi;"
 
             runCmd(restartMongoDB)
@@ -461,5 +461,6 @@ if (disableRestartScript === 0 || disableRestartScript === false || disableResta
     });
 } else {
     logr.warn("Restart script disabled!");
-    await checkHeightAndRun();
+    await runCmd(restartMongoDB);
+    await runCmd(restartAvalon);
 }
