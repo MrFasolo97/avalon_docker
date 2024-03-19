@@ -10,15 +10,32 @@ const { MongoClient } = pkg
 
 
 log4js.configure({
+        levels: {
+        CONS: { value: 9000, colour: 'magenta' },
+        ECON: { value: 8000, colour: 'blue' },
+        PERF: { value: 7000, colour: 'white' },
+    },
     appenders: {
-      logs: { type: 'file', filename: '/avalon/log/restart_script.log' },
-      console: { type: 'console' },
+        out: { type: 'stdout', layout: {
+            type: 'pattern',
+            pattern: '%[%d{hh:mm:ss.SSS} [%p]%] %m',
+        }},
+        file: {
+            type: 'file',
+            filename: '/avalon/log/restart_script.log',
+            maxLogSize: 10485760,
+            backups: 3,
+            compress: true
+        }
     },
     categories: {
-      logs: { appenders: ['logs'], level: 'trace' },
-      console: { appenders: ['console'], level: 'trace' },
-      default: { appenders: ['console', 'logs'], level: 'info' },
-    },
+        logs: { appenders: ['logs'], level: 'trace' },
+        console: { appenders: ['console'], level: 'trace' },
+        default: { 
+            appenders: ['out', 'file'],
+            level: process.env.LOG_LEVEL || 'info'
+        }
+    }
   });
 
 
