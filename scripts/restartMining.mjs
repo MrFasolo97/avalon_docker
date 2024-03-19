@@ -29,7 +29,6 @@ log4js.configure({
         }
     },
     categories: {
-        logs: { appenders: ['logs'], level: 'trace' },
         console: { appenders: ['console'], level: 'trace' },
         default: { 
             appenders: ['out', 'file'],
