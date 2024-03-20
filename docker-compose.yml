@@ -6,7 +6,8 @@ services:
         dockerfile: Dockerfile
         args:
           - rebuild
-
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     image: avalon:1.0.0
     hostname: avalon
     container_name: avalon
