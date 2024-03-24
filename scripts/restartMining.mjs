@@ -230,7 +230,7 @@ async function downloadBlocksFile(cb) {
     } else {
         mtime = 0;
     }
-    if(Date.now() - mtime > 86400000*10) { // if the file is older than 10 day(s), then re-download it.
+    if(Date.now() - mtime > 86400000*10 && parseInt(process.env.CREATE_NET) != 1) { // if the file is older than 10 day(s), then re-download it.
         const backupUrl = config.blockBackupUrl
         logr.info("Downloading blocks.bson file... it may take a while.")
         await downloadFile(backupUrl, "/data/avalon/blocks/blocks.bson").then(() =>{
