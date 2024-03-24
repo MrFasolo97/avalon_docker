@@ -393,11 +393,11 @@ async function checkHeightAndRun() {
                 logr.info("Dropping avalon mongo db (creating new net)")
                 mongo.dropDatabase(function(){
                     logr.info("Removing genesis.zip")
-                    var removeGenesisCmd = "if [[ -d \"/avalon/genesis/genesis.zip\" ]]; then rm -rf /avalon/genesis; fi"
+                    const removeGenesisCmd = "if [[ -d \"/avalon/genesis/genesis.zip\" ]]; then rm -rf /avalon/genesis; fi"
                     runCmd(removeGenesisCmd)
 
                     logr.info("Restarting avalon with new net")
-                    runAvalonScriptCmd = config.scriptPath + " >> " + config.logPath + " 2>&1"
+                    const runAvalonScriptCmd = config.scriptPath + " >> " + config.logPath + " 2>&1"
                     runCmd(runAvalonScriptCmd)
                 });
             })
