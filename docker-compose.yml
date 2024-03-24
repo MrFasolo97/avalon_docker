@@ -1,4 +1,3 @@
-version: "3.2"
 services:
   avalon:
     build:
@@ -72,6 +71,7 @@ services:
       - REBUILD_RESUME_BLK=${REBUILD_RESUME_BLK}
 
       - DISABLE_RESTART_SCRIPT=${DISABLE_RESTART_SCRIPT}
+      - CREATE_NET=${CREATE_NET}
 
         # default peers to connect with 
       - PEERS=${PEERS}
