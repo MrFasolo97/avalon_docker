@@ -36,8 +36,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && apt-get install
 
 RUN rm -rf /var/lib/apt/lists/*
 
-LABEL "project.home"="https://github.com/dtube/avalon"
-RUN cd / && git clone https://github.com/dtube/avalon
+LABEL "project.home"="https://github.com/MrFasolo97/avalon"
+RUN cd / && git clone https://github.com/MrFasolo97/avalon
 
 RUN mkdir /avalon/log
 RUN mkdir /avalon/genesis
