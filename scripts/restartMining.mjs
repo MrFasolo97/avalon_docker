@@ -475,7 +475,7 @@ if (disableRestartScript === 0 || disableRestartScript === false || disableResta
     cron.schedule("30 * * * * *", async () => {
         await checkHeightAndRun()
     });
-} else {
+} else if (createNet == 0) {
     logr.warn("Restart script disabled!");
     await runCmd(restartMongoDB);
     await runCmd(restartAvalon);
