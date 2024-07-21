@@ -91,7 +91,7 @@ let config = {
     replayLogPath: "/avalon/log/avalon_replay.log",
     backupUrl: backupUrlOrig + "$(TZ=GMT date +\"%d%h%Y_%H\").tar.gz",
     blockBackupUrl: backupUrlMain + "blocks.bson",
-    genesisSourceUrl: backupUrlMain + "genesis.zip",
+    genesisSourceUrl: backupUrlMain + "genesis_new_dtube.zip",
     mongodbPath: "/data/db"
 }
 
