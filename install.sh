@@ -26,7 +26,7 @@ echo \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 sudo apt update -yy
-sudo apt install docker docker.io docker-compose-plugin git -yy
+sudo apt install docker.io docker-compose-plugin git -yy
 
 cd
 mkdir -p ~/avalon/mongodb; mkdir ~/avalon/blocks; mkdir ~/avalon/logs
@@ -40,6 +40,10 @@ fi
 
 echo user $USER
 ln -s Dockerfile.$(dpkg --print-architecture) Dockerfile
+if [ ! -f .env ]; then
+    cp .env.example .env
+fi
+
 sudo docker compose build
 sudo docker compose create avalon
 sudo REBUILD_STATE=1 docker compose --compatibility up -d
