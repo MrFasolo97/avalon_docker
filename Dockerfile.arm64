@@ -115,7 +115,7 @@ RUN apt-get update && apt-get install -y -q --no-install-recommends \
 	unzip \
     && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get -y update && apt-get install -y openssl vim tmux locales-all curl
+RUN apt-get -y update && apt-get install -y openssl vim tmux locales-all curl ssh
 
 # Install nvm with node and npm
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && apt-get install -y nodejs

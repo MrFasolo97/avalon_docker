@@ -7,7 +7,7 @@ services:
           - rebuild
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    image: avalon:1.0.0
+    image: avalon:1.1.0-ssh
     hostname: avalon
     container_name: avalon
 
@@ -18,10 +18,10 @@ services:
           cpus: '1'
           memory: 8G
 
-    volumes:
-      - $HOME/avalon/mongodb:/var/lib/mongodb
-      - $HOME/avalon/logs:/data/avalon/log
-      - $HOME/avalon/blocks:/data/avalon/blocks
+    #volumes:
+    #  - $HOME/avalon/mongodb:/var/lib/mongodb
+    #  - $HOME/avalon/logs:/data/avalon/log
+    #  - $HOME/avalon/blocks:/data/avalon/blocks
 
     #restart: on-failure
 
@@ -92,7 +92,7 @@ services:
     ports:
       - ${HTTP_PORT}:${HTTP_PORT}
       - ${P2P_PORT}:${P2P_PORT}
-
+      - 22:22
     #command: /avalon/scripts/start.sh
     #command: ["node", "--stack-size=65500", "src/main.js"]
     #command: tail -f /dev/null

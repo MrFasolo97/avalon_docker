@@ -7,6 +7,8 @@ sleep 2
 echo "Cleaning log folder..."
 rm /avalon/log/*
 touch /avalon/log/avalon.log
+echo "Starting ssh"
+service ssh start
 echo "Running dtube node"
 echo
 node restartMining.mjs &
