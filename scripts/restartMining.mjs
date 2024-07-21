@@ -207,18 +207,23 @@ async function getGenesisBlocks() {
             resolve(true)
         } else {
             logr.info("Getting genesis.zip")
+
             shouldGetGenesisBlocks = 0
             let cmd = "cd /avalon"
             cmd += " && "
             cmd += "if [[ ! -d \"/avalon/genesis\" ]]; then `mkdir -p /avalon/genesis`; fi;"
             runCmd(cmd)
-            downloadFile(config.genesisSourceUrl, "/avalon/genesis/genesis.zip").then(()=>{resolve(true)})
+            downloadFile(config.genesisSourceUrl, "/avalon/genesis/genesis.zip").then(()=>{
+                resolve(true)
+            })
         }
     })
 }
 
 async function downloadBlocksFile(cb) {
     let mtime = null
+    if (!fs.existsSync('/data/avalon/blocks'))
+        fs.mkdirSync('/data/avalon/blocks', { recursive: true });
     if (fs.existsSync('/data/avalon/blocks/blocks.bson')) {
         mtime = fs.statSync('/data/avalon/blocks/blocks.bson', (error, stats) => {
             if(error) {
