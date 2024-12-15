@@ -90,8 +90,8 @@ let config = {
     logPath: "/avalon/log/avalon.log",
     replayLogPath: "/avalon/log/avalon_replay.log",
     backupUrl: backupUrlOrig + "$(TZ=GMT date +\"%d%h%Y_%H\").tar.gz",
-    blockBackupUrl: backupUrlMain + "new_blocks.bson",
-    genesisSourceUrl: backupUrlMain + "genesis_new_dtube.zip",
+    blockBackupUrl: backupUrlMain + "blocks.bson",
+    genesisSourceUrl: backupUrlMain + "genesis.zip",
     mongodbPath: "/data/db"
 }
 
@@ -197,7 +197,7 @@ async function getGenesisBlocks() {
                 logr.info("Skipping getGenesisBlock as we already have block data.")
             } else {
                 logr.info("Genesis collection started.")
-                logr.info("Dropping avalon mongo db (getting genesis blocks)")
+                logr.info("Dropping avalon mongo db (getting genesis block)")
                 mongo.dropDatabase()
             }
         })
