@@ -2,7 +2,9 @@
 echo "Following are the environment variables"
 env
 echo "Starting the mongodb database"
-mongod --dbpath /var/lib/mongodb > mongodb.log &
+mkdir -p /data/avalon/mongodb
+mkdir -p /data/avalon/log
+mongod --dbpath /data/avalon/mongodb > /data/avalon/log/mongodb.log &
 sleep 2
 echo "Cleaning log folder..."
 rm /avalon/log/*

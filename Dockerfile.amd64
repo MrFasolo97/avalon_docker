@@ -1,9 +1,10 @@
-FROM ubuntu:jammy
+FROM ubuntu:noble
 
 EXPOSE 6029
 EXPOSE 3029
 
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Set debconf to run non-interactively
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
@@ -27,9 +28,9 @@ RUN apt-get update && apt-get install -y -q --no-install-recommends \
 	ssh
 RUN service ssh start && update-rc.d ssh defaults
 
-RUN curl -O http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1-1ubuntu2.1~18.04.23_amd64.deb && dpkg -i libssl1.*amd64.deb && rm libssl1.*amd64.deb
+RUN curl -O https://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.23_amd64.deb && dpkg -i libssl1.*amd64.deb && rm libssl1.*amd64.deb
 RUN wget https://repo.mongodb.org/apt/ubuntu/dists/focal/mongodb-org/6.0/multiverse/binary-amd64/mongodb-org-server_6.0.8_amd64.deb && dpkg -i mongodb-org-server_6.0.8_amd64.deb && rm mongodb-org-server_6.0.8_amd64.deb
-RUN wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-x86_64-100.7.3.deb && dpkg -i mongodb-database-tools-ubuntu2204-x86_64-100.7.3.deb && rm mongodb-database-tools-ubuntu2204-x86_64-100.7.3.deb
+RUN wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-x86_64-100.10.0.deb && dpkg -i mongodb-database-tools-ubuntu2204-x86_64-100.10.0.deb && rm mongodb-database-tools-ubuntu2204-x86_64-100.10.0.deb
 
 RUN apt-get -y update && apt-get install -y openssl vim tmux locales-all
 
@@ -40,6 +41,9 @@ RUN rm -rf /var/lib/apt/lists/*
 
 LABEL "project.home"="https://github.com/MrFasolo97/avalon"
 RUN cd / && git clone https://github.com/MrFasolo97/avalon && cd /avalon && git checkout new_net
+
+RUN useradd dtube --home-dir /avalon
+RUN echo 'dtube:dtube' | chpasswd
 
 RUN mkdir /avalon/log
 RUN mkdir /avalon/genesis
@@ -56,7 +60,9 @@ VOLUME $HOME/avalon/blocks /avalon/blocks
 ADD ./scripts/start_dtube.sh ./scripts/start_dtube.sh
 ADD ./scripts/start_mainnet.sh ./scripts/start_mainnet.sh
 ADD ./scripts/restartMining.mjs .
+RUN cp /etc/profile /avalon/.profile
+RUN cp /etc/bash.bashrc /avalon/.bashrc
 COPY .tmux.conf /root/.tmux.conf
 COPY .vimrc /root/.vimrc
 
-CMD ["sh"]
+CMD ["./scripts/start_dtube.sh"]
