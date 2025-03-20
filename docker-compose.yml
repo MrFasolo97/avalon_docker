@@ -7,7 +7,7 @@ services:
           - rebuild
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    image: avalon:1.0.0
+    image: fasolo97/avalon:latest
     hostname: avalon
     container_name: avalon
 
