@@ -40,7 +40,7 @@ RUN rm -rf /var/lib/apt/lists/*
 LABEL "project.home"="https://github.com/MrFasolo97/avalon"
 RUN cd / && git clone https://github.com/MrFasolo97/avalon && cd /avalon && git checkout new_net
 
-RUN mkdir /avalon/log /avalon/genesis /avalon/blocks /data
+RUN mkdir -p /avalon/log /avalon/genesis /avalon/blocks /data/db
 
 RUN cd /avalon && npm install
 RUN cd /avalon && npm install --save axios node-cron
@@ -59,4 +59,4 @@ WORKDIR /avalon
 COPY .tmux.conf $HOME/.tmux.conf
 COPY .vimrc $HOME/.vimrc
 
-CMD ["./scripts/start_dtube.sh"]
+CMD ./scripts/start_dtube.sh
