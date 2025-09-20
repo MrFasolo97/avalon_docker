@@ -1,4 +1,4 @@
-FROM ubuntu:jammy
+FROM ubuntu:questing
 
 EXPOSE 6029
 EXPOSE 3029
@@ -12,7 +12,7 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
 # Install base dependencies
-RUN apt-get update && apt-get install -y -q --no-install-recommends \
+RUN apt-get update && apt upgrade -y && apt-get install -y -q --no-install-recommends \
         apt-transport-https \
         build-essential \
         ca-certificates \
@@ -23,38 +23,40 @@ RUN apt-get update && apt-get install -y -q --no-install-recommends \
 	libcurl4 \
 	libssl3 \
 	tzdata \
-	curl
+	curl \
+        adduser
 
 RUN curl -O http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1-1ubuntu2.1~18.04.23_amd64.deb && dpkg -i libssl1.*amd64.deb && rm libssl1.*amd64.deb
-RUN wget https://repo.mongodb.org/apt/ubuntu/dists/focal/mongodb-org/6.0/multiverse/binary-amd64/mongodb-org-server_6.0.8_amd64.deb && dpkg -i mongodb-org-server_6.0.8_amd64.deb && rm mongodb-org-server_6.0.8_amd64.deb
-RUN wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-x86_64-100.7.3.deb && dpkg -i mongodb-database-tools-ubuntu2204-x86_64-100.7.3.deb && rm mongodb-database-tools-ubuntu2204-x86_64-100.7.3.deb
+RUN wget http://repo.mongodb.org/apt/ubuntu/dists/noble/mongodb-org/8.2/multiverse/binary-amd64/mongodb-org-server_8.2.0_amd64.deb && apt install -y ./mongodb-org-server_8.2.0_amd64.deb && rm mongodb-org-server_8.2.0_amd64.deb
+RUN wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2404-x86_64-100.13.0.deb && apt install -y ./mongodb-database-tools-ubuntu*.deb && rm mongodb-database-tools-ubuntu*.deb
 
 RUN apt-get -y update && apt-get install -y openssl vim tmux locales-all
 
 # Install nvm with node and npm
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && apt-get install -y nodejs
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && apt-get install -y nodejs
 
 RUN rm -rf /var/lib/apt/lists/*
 
 LABEL "project.home"="https://github.com/MrFasolo97/avalon"
 RUN cd / && git clone https://github.com/MrFasolo97/avalon && cd /avalon && git checkout new_net
 
-RUN mkdir /avalon/log
-RUN mkdir /avalon/genesis
-RUN mkdir /avalon/blocks
-WORKDIR /avalon
-RUN npm install
-RUN npm install --save axios node-cron
-RUN echo "" > log/avalon.log
+RUN mkdir /avalon/log /avalon/genesis /avalon/blocks /data
+
+RUN cd /avalon && npm install
+RUN cd /avalon && npm install --save axios node-cron
+RUN echo "" > /avalon/log/avalon.log
 
 VOLUME $HOME/avalon/logs /avalon/log
 VOLUME $HOME/avalon/mongodb /data/db
 VOLUME $HOME/avalon/blocks /avalon/blocks
 
-ADD ./scripts/start_dtube.sh ./scripts/start_dtube.sh
-ADD ./scripts/start_mainnet.sh ./scripts/start_mainnet.sh
-ADD ./scripts/restartMining.mjs .
-COPY .tmux.conf /root/.tmux.conf
-COPY .vimrc /root/.vimrc
+ADD ./scripts/start_dtube.sh /avalon/scripts/start_dtube.sh
+ADD ./scripts/start_mainnet.sh /avalon/scripts/start_mainnet.sh
+ADD ./scripts/restartMining.mjs /avalon/
+RUN adduser --disabled-password --gecos "" avalon && chown -R avalon:avalon /avalon && chown -R avalon:avalon /data
+USER avalon
+WORKDIR /avalon
+COPY .tmux.conf $HOME/.tmux.conf
+COPY .vimrc $HOME/.vimrc
 
-CMD ["sh"]
+CMD ["./scripts/start_dtube.sh"]

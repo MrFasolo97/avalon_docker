@@ -219,8 +219,8 @@ async function getGenesisBlocks() {
 
 async function downloadBlocksFile(cb) {
     let mtime = null
-    if (fs.existsSync('/data/avalon/blocks/blocks.bson')) {
-        mtime = fs.statSync('/data/avalon/blocks/blocks.bson', (error, stats) => {
+    if (fs.existsSync('/avalon/blocks/blocks.bson')) {
+        mtime = fs.statSync('/avalon/blocks/blocks.bson', (error, stats) => {
             if(error) {
                 console.log(error)
             } else {
@@ -233,7 +233,7 @@ async function downloadBlocksFile(cb) {
     if(Date.now() - mtime > 86400000*10 && parseInt(process.env.CREATE_NET) != 1) { // if the file is older than 10 day(s), then re-download it.
         const backupUrl = config.blockBackupUrl
         logr.info("Downloading blocks.bson file... it may take a while.")
-        await downloadFile(backupUrl, "/data/avalon/blocks/blocks.bson").then(() =>{
+        await downloadFile(backupUrl, "/avalon/blocks/blocks.bson").then(() =>{
             if (typeof cb == 'function') {
                 cb()
             }
@@ -328,7 +328,7 @@ async function checkHeightAndRun() {
                 if (!fs.existsSync(genesisFilePath)) {
                     await getGenesisBlocks()
                 }
-                if (! fs.existsSync('/data/avalon/blocks/blocks.bson')) {
+                if (! fs.existsSync('/avalon/blocks/blocks.bson')) {
                     await downloadBlocksFile();
                 }
                 logr.info("Rebuilding state from blocks")
@@ -442,7 +442,7 @@ async function checkHeightAndRun() {
 let restartMongoDB = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep 'mongod --dbpath'` ]]; then `mongod --dbpath " + config.mongodbPath + " &`; sleep 15; fi"
 let restartAvalon = "if [[ ! `ps aux | grep -v grep | grep -v defunct | grep src/main` ]]; then `echo \" Restarting avalon\" >> " + config.logPath + " `; `" + config.scriptPath + " >> " + config.logPath + " 2>1&" + "`; fi"
 // running first time
-if (! fs.existsSync('/data/avalon/blocks/blocks.bson')) {
+if (! fs.existsSync('/avalon/blocks/blocks.bson')) {
     await downloadBlocksFile();
     if (shouldGetGenesisBlocks) {
         await getGenesisBlocks().then(async ()=>{
